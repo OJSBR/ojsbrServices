@@ -1,6 +1,7 @@
 {extends file="layouts/backend.tpl"}
 
 {block name="page"}
+	<div class="ojsbr-services-page">
 	<h1 class="app__pageHeading">{translate key="plugins.generic.ojsbrServices.editor.title"}</h1>
 	<p>{translate key="plugins.generic.ojsbrServices.editor.intro"}</p>
 
@@ -87,4 +88,5 @@
 	{else}
 		<p>{translate key="plugins.generic.ojsbrServices.editor.noSubmissions"}</p>
 	{/if}
+	</div>
 {/block}

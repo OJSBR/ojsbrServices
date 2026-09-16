@@ -55,7 +55,13 @@ class OjsbrEditorHandler extends Handler
     /**
      * The submissions, each with the service order already recorded for it.
      */
-    public function index(array $args, Request $request): void
+    /**
+     * @copydoc PKPHandler::index()
+     *
+     * The signature is the parent's: PHP refuses a narrower one, and the page
+     * would fatal before anything is rendered.
+     */
+    public function index($args, $request)
     {
         $this->setupTemplate($request);
         $context = $request->getContext();
@@ -561,18 +567,18 @@ class OjsbrEditorHandler extends Handler
         return null;
     }
 
+    /**
+     * The title of a submission, which since 3.4 lives on its publication.
+     */
     private function publicationTitle(Submission $submission, ?Publication $publication): string
     {
-        if ($publication && method_exists($publication, 'getLocalizedFullTitle')) {
-            $title = (string) $publication->getLocalizedFullTitle();
-            if ($title !== '') {
-                return $title;
-            }
+        $publication ??= $submission->getCurrentPublication();
+        if (!$publication) {
+            return '';
         }
-        if ($publication && method_exists($publication, 'getLocalizedTitle')) {
-            return (string) $publication->getLocalizedTitle();
-        }
-        return (string) $submission->getLocalizedTitle();
+        $title = (string) $publication->getLocalizedFullTitle();
+
+        return $title !== '' ? $title : (string) $publication->getLocalizedTitle();
     }
 
     private function publicationDoi(Publication $publication): string

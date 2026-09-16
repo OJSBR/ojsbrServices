@@ -59,6 +59,10 @@ of the plugin's own.
   proof of token, and the requests the plugin makes — JSON and multipart, with their headers —
   against a mocked HTTP client, including a connector that cannot be reached. The signature checks
   are skipped where ext-sodium is missing.
+- **Cypress** (`cypress/tests/functional/`): enables the plugin, checks that the editor's screen is
+  behind the login and that heartbeat, callback and key refuse a request that is not signed — with
+  no signature at all, and with something that only looks like one. Each check fails with the part
+  it covers removed.
 - Verified on OJS 3.5.0.3.
 
 Tests are kept in the repository and are not part of the release package.
@@ -106,6 +110,9 @@ Instalar em `plugins/generic/ojsbrServices`. Requer **ext-sodium** (verificaçã
   placeholder), a prova de posse do token e os pedidos que o plugin faz — JSON e multipart, com os
   cabeçalhos — contra um cliente HTTP simulado, inclusive um conector fora do ar. As verificações
   de assinatura são puladas onde falta a ext-sodium.
+- **Cypress** (`cypress/tests/functional/`): liga o plugin, confere que a tela do editor está atrás
+  do login e que heartbeat, callback e chave recusam pedido sem assinatura — sem nenhuma e com algo
+  que só parece uma. Cada verificação reprova com a parte que ela cobre removida.
 - Verificado no OJS 3.5.0.3.
 
 Os testes ficam no repositório e não fazem parte do pacote da release.

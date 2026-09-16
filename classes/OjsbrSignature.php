@@ -31,17 +31,20 @@ class OjsbrSignature
     public static function fromRequest(Request $request): array
     {
         return [
-            'timestamp' => self::firstNonEmpty([
-                $request->getUserVar('HTTP_X_OJSBR_TIMESTAMP'),
-                self::server($request, 'HTTP_X_OJSBR_TIMESTAMP'),
-                self::server($request, 'X-OJSBR-Timestamp'),
-            ]),
-            'signature' => self::firstNonEmpty([
-                $request->getUserVar('HTTP_X_OJSBR_SIGNATURE'),
-                self::server($request, 'HTTP_X_OJSBR_SIGNATURE'),
-                self::server($request, 'X-OJSBR-Signature'),
-            ]),
+            'timestamp' => self::header('HTTP_X_OJSBR_TIMESTAMP'),
+            'signature' => self::header('HTTP_X_OJSBR_SIGNATURE'),
         ];
+    }
+
+    /**
+     * One header of the request being answered. The core reads its own headers
+     * the same way (PKPRequest::getUserAgent), and a header is the only place
+     * these are taken from: a parameter is not a header.
+     */
+    private static function header(string $key): ?string
+    {
+        $value = trim((string) ($_SERVER[$key] ?? ''));
+        return $value === '' ? null : $value;
     }
 
     /**
@@ -63,6 +66,13 @@ class OjsbrSignature
      */
     public static function verify(?string $timestamp, ?string $signatureB64, string $body, array $publicPems): bool
     {
+        // Without ext-sodium nothing can be verified, so nothing is accepted:
+        // the installation refuses every signed request instead of failing with
+        // an undefined constant in the middle of the answer.
+        if (!extension_loaded('sodium')) {
+            error_log('OJSBR Services: ext-sodium is not loaded; signed requests cannot be verified.');
+            return false;
+        }
         if ($timestamp === null || $timestamp === '' || $signatureB64 === null || $signatureB64 === '') {
             return false;
         }
@@ -113,6 +123,9 @@ class OjsbrSignature
      */
     public static function extractPublicKey(string $material): ?string
     {
+        if (!extension_loaded('sodium')) {
+            return null;
+        }
         $material = trim($material);
         if ($material === '' || str_contains($material, 'PIN-PLACEHOLDER')) {
             return null;
@@ -161,25 +174,4 @@ class OjsbrSignature
         return null;
     }
 
-    private static function server(Request $request, string $key): ?string
-    {
-        $value = $request->getServerVar($key);
-        if ($value === null || $value === '') {
-            return null;
-        }
-        return (string) $value;
-    }
-
-    /**
-     * @param array<int,mixed> $candidates
-     */
-    private static function firstNonEmpty(array $candidates): ?string
-    {
-        foreach ($candidates as $value) {
-            if ($value !== null && $value !== '') {
-                return (string) $value;
-            }
-        }
-        return null;
-    }
 }
