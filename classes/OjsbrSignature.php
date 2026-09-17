@@ -145,9 +145,9 @@ class OjsbrSignature
             return substr($der, -SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES);
         }
 
-        $raw = base64_decode($material, true);
-        if ($raw !== false && strlen($raw) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
-            return $raw;
+        $decoded = base64_decode($material, true);
+        if ($decoded !== false && strlen($decoded) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            return $decoded;
         }
 
         if (ctype_xdigit($material) && strlen($material) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES * 2) {
