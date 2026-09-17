@@ -126,6 +126,12 @@ class OjsbrSignature
         if (!extension_loaded('sodium')) {
             return null;
         }
+
+        // The key may come as text (PEM, base64, hex) or as the 32 raw bytes.
+        // Only the text forms may be trimmed: a raw key whose first or last byte
+        // is 0x20, 0x09, 0x0a, 0x0d, 0x0b or 0x00 would lose it and be refused,
+        // which is one key in about forty and impossible to see from outside.
+        $raw = $material;
         $material = trim($material);
         if ($material === '' || str_contains($material, 'PIN-PLACEHOLDER')) {
             return null;
@@ -149,8 +155,8 @@ class OjsbrSignature
             return $hex === false ? null : $hex;
         }
 
-        if (strlen($material) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
-            return $material;
+        if (strlen($raw) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+            return $raw;
         }
 
         return null;

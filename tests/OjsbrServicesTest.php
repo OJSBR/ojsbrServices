@@ -141,6 +141,32 @@ class OjsbrServicesTest extends PKPTestCase
         $this->assertNotSame('', trim($shipped), 'the repository ships a pin file');
     }
 
+    /**
+     * A raw key whose first or last byte is one that trim() takes away — a space,
+     * a tab, a line break or a NUL — is still that key. About one key in forty
+     * begins or ends with one of them, and a pin refused for that reason would
+     * look like a wrong signature and nothing else.
+     */
+    public function testARawKeyThatBeginsOrEndsWithAByteTrimWouldEatIsStillRead(): void
+    {
+        $this->requireKeys();
+        $middle = substr($this->publicKey, 1, SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES - 2);
+
+        foreach ([' ', "\t", "\n", "\r", "\x0B", "\0"] as $byte) {
+            $key = $byte . $middle . $byte;
+            $this->assertSame(
+                SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES,
+                strlen($key),
+                'the key of the test is of the right length'
+            );
+            $this->assertSame(
+                $key,
+                OjsbrSignature::extractPublicKey($key),
+                'a raw key around the byte ' . bin2hex($byte) . ' was not read'
+            );
+        }
+    }
+
     public function testTheProofOfTokenIsTheHmacOfTheNonce(): void
     {
         $this->assertSame(
